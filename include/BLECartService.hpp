@@ -1,6 +1,9 @@
 #ifndef BLE_CART_SERVICE_HPP
 #define BLE_CART_SERVICE_HPP
 
+#define BLE_GATT_CPF_UNIT_UNITLESS 0x2700
+#define BLE_GATT_CPF_FORMAT_UINT8 0x04
+
 #include <ArduinoBLE.h>
 #include <ESP32Servo.h>
 #include <M5Unified.h>
@@ -8,6 +11,15 @@ namespace ble
 {
     class BLECartService : public BLEService
     {
+    private:
+        const uint8_t pwr_format_[7] = {BLE_GATT_CPF_FORMAT_UINT8,
+                                        0b0,
+                                        (uint8_t)BLE_GATT_CPF_UNIT_UNITLESS,
+                                        (uint8_t)(BLE_GATT_CPF_UNIT_UNITLESS >> 8),
+                                        0x01,
+                                        0x00,
+                                        0x00};
+
     public:
         BLEByteCharacteristic left_wheel_power_char;
         BLEByteCharacteristic right_wheel_power_char;
@@ -27,15 +39,6 @@ namespace ble
             right_wheel_power_char.addDescriptor(right_user_descriptor);
 
             // Add Format descriptors
-            uint8_t format_type = 0x04;            // unsigned 8-bit integer
-            unsigned short unitless_unit = 0x2700; // unitless
-            uint8_t pwr_format_[7] = {format_type,
-                                      0,
-                                      unitless_unit,
-                                      (uint8_t)(unitless_unit >> 8U),
-                                      0x01,
-                                      0x00,
-                                      0x00};
             auto left_format_descriptor = BLEDescriptor("2904", pwr_format_, 7);
             left_wheel_power_char.addDescriptor(left_format_descriptor);
             auto right_format_descriptor = BLEDescriptor("2904", pwr_format_, 7);
@@ -53,13 +56,13 @@ namespace ble
             bool is_written = false;
             if (left_wheel_power_char.written())
             {
-                int8_t power = map((int)left_wheel_power_char.value(), 0, 255, 0U, 180U);
+                int8_t power = map(left_wheel_power_char.value(), 0, 255, 0U, 180U);
                 left_wheel.write(power);
                 is_written = true;
             }
             if (right_wheel_power_char.written())
             {
-                int8_t power = map((int)right_wheel_power_char.value(), 0, 255, 180U, 0U);
+                int8_t power = map(right_wheel_power_char.value(), 0, 255, 180U, 0U);
                 right_wheel.write(power);
                 is_written = true;
             }
