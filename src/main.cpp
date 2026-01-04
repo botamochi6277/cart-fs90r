@@ -74,9 +74,13 @@ void loop()
 
     BLE.poll();
     auto is_written = cart_service.poll(left_servo, right_servo);
-    if (is_written)
+    if (is_written > 0)
     {
-        Serial.printf("Left value: %d, Right value: %d", cart_service.left_wheel_power_char.value(), cart_service.right_wheel_power_char.value());
+        Serial.printf("Left value: %d, Right value: %d, Command: %c, written charactoristic: %d\n\r",
+                      cart_service.left_wheel_power_char.value(),
+                      cart_service.right_wheel_power_char.value(),
+                      cart_service.command_char.value(),
+                      is_written);
         Serial.printf("Left Power: %d, Right Power: %d", left_servo.read(), right_servo.read());
         Serial.println();
     }
